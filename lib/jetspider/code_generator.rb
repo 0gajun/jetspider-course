@@ -119,7 +119,7 @@ module JetSpider
       when var.parameter?
         @asm.getarg var.index
       when var.local?
-        raise NotImplementedError, 'ResolveNode - local'
+        @asm.getlocal var.index
       when var.global?
         @asm.getgname var.name
       else
@@ -128,19 +128,33 @@ module JetSpider
     end
 
     def visit_OpEqualNode(n)
-      raise NotImplementedError, 'OpEqualNode'
+      var = n.left.variable
+      visit n.value
+      case
+      when var.parameter?
+        @asm.setarg var.index
+      when var.local?
+        @asm.setlocal var.index
+      when var.global?
+        @asm.setgname var.index
+      else 
+        raise "[FATAL]"
+      end
     end
 
     def visit_VarStatementNode(n)
-      raise NotImplementedError, 'VarStatementNode'
+      n.value.each { |decl| visit decl }
     end
 
     def visit_VarDeclNode(n)
-      raise NotImplementedError, 'VarDeclNode'
+      var = n.variable
+      visit n.value
+      @asm.setlocal var.index
+      @asm.pop
     end
 
     def visit_AssignExprNode(n)
-      raise NotImplementedError, 'AssignExprNode'
+      visit n.value
     end
 
     # We do not support let, const, with
