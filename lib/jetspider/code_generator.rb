@@ -218,9 +218,31 @@ module JetSpider
     end
 
     def visit_AddNode(n)
-      visit n.left
-      visit n.value
-      @asm.add
+      node = const_add_convolution(n)
+
+      if node.is_a?(Nodes::NumberNode)
+        visit node
+      else
+        visit node.left
+        visit node.value
+        @asm.add
+      end
+    end
+
+    def const_add_convolution(n)
+      left = convolute_value(n.left)
+      right = convolute_value(n.value)
+
+      if left.is_a?(Nodes::NumberNode) and right.is_a?(Nodes::NumberNode)
+        Nodes::NumberNode.new(left.value + right.value)
+      else 
+        Nodes::AddNode.new(left, right)
+      end
+    end
+
+    def convolute_value(n)
+      n = n.value if n.is_a?(Nodes::ParentheticalNode)
+      n.is_a?(Nodes::AddNode) ? const_add_convolution(n) : n
     end
 
     def visit_SubtractNode(n)
