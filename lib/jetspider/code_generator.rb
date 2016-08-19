@@ -129,14 +129,17 @@ module JetSpider
 
     def visit_OpEqualNode(n)
       var = n.left.variable
-      visit n.value
       case
       when var.parameter?
+        visit n.value
         @asm.setarg var.index
       when var.local?
+        visit n.value
         @asm.setlocal var.index
       when var.global?
-        @asm.setgname var.index
+        @asm.bindgname var.name
+        visit n.value
+        @asm.setgname var.name
       else 
         raise "[FATAL]"
       end
@@ -305,7 +308,8 @@ module JetSpider
     end
 
     def visit_PostfixNode(n)
-      raise "PostfixNode not implemented"
+      visit n.operand
+      visit Nodes::OpEqualNode.new(n.operand, Nodes::AddNode.new(n.operand, Nodes::NumberNode.new(1)))
     end
 
     def visit_BitwiseNotNode(n) raise "BitwiseNotNode not implemented"; end
