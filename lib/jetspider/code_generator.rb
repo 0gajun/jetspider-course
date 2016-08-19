@@ -82,7 +82,9 @@ module JetSpider
     #
 
     def visit_FunctionCallNode(n)
-      raise NotImplementedError, 'FunctionCallNode'
+      @asm.callgname n.value.value
+      n.arguments.value.each { |arg| visit arg }
+      @asm.call n.arguments.value.size
     end
 
     def visit_FunctionDeclNode(n)
